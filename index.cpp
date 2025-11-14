@@ -3,9 +3,7 @@
 #include <vector>
 using namespace std;
 
-// ===============================
-// Base class: LibraryItem
-// ===============================
+
 class LibraryItem {
 protected:
     string title;
@@ -24,13 +22,11 @@ public:
     void checkOut()  { checkedOut = true; }
     void returnItem(){ checkedOut = false; }
 
-    // Every item must show itself
+
     virtual void show() const = 0;
 };
 
-// ===============================
-// Book (derived from LibraryItem)
-// ===============================
+
 class Book : public LibraryItem {
     string author;
 public:
@@ -46,9 +42,7 @@ public:
     }
 };
 
-// ===============================
-// Magazine (derived from LibraryItem)
-// ===============================
+
 class Magazine : public LibraryItem {
     int issue;
 public:
@@ -64,9 +58,7 @@ public:
     }
 };
 
-// ===============================
-// Base class: User
-// ===============================
+
 class User {
 protected:
     int id;
@@ -81,9 +73,7 @@ public:
     virtual void show() const = 0;
 };
 
-// ===============================
-// Patron (normal user)
-// ===============================
+
 class Patron : public User {
 public:
     Patron(int i, string n) : User(i, n) {}
@@ -94,9 +84,7 @@ public:
     }
 };
 
-// ===============================
-// Librarian (admin user)
-// ===============================
+
 class Librarian : public User {
 public:
     Librarian(int i, string n) : User(i, n) {}
@@ -107,14 +95,12 @@ public:
     }
 };
 
-// ===============================
-// Library class (manager)
-// ===============================
+
 class Library {
     vector<LibraryItem*> items;
     vector<User*> users;
 public:
-    // Destructor: clean memory
+
     ~Library() {
         for (auto p : items) delete p;
         for (auto u : users) delete u;
@@ -202,9 +188,7 @@ public:
     }
 };
 
-// ===============================
-// main
-// ===============================
+
 int main() {
     Library lib;
     int choice;
