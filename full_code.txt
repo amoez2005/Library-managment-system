@@ -1,0 +1,416 @@
+===== README.md =====
+A console-based Library Management System built in C++, designed to demonstrate the four core Object-Oriented Programming (OOP)
+principles
+Encapsulation
+Inheritance
+Polymorphism
+Abstraction
+along with adherence to SOLID design principles.
+The project provides a simple yet well-structured example of how OOP and clean design architecture can be applied to real-world
+problems.
+
+## Building
+
+Use a single g++ command to compile all sources in `src/`:
+
+```
+g++ -std=c++17 -Wall -Wextra -Wpedantic src/*.cpp -o library
+```
+
+Run the program with:
+
+```
+./library
+```
+
+===== src/book.h =====
+#pragma once
+
+#include <string>
+#include "library_item.h"
+
+class Book : public LibraryItem {
+    std::string author;
+
+public:
+    Book(std::string t, int i, std::string a);
+    void show() const override;
+};
+
+===== src/librarian.h =====
+#pragma once
+
+#include "user.h"
+
+class Librarian : public User {
+public:
+    Librarian(int i, std::string n);
+    void show() const override;
+};
+
+===== src/library.h =====
+#pragma once
+
+#include <memory>
+#include <vector>
+
+#include "book.h"
+#include "librarian.h"
+#include "magazine.h"
+#include "patron.h"
+
+class Library {
+    std::vector<std::unique_ptr<LibraryItem>> items;
+    std::vector<std::unique_ptr<User>> users;
+
+public:
+    Library() = default;
+    ~Library() = default;
+
+    void addItem(std::unique_ptr<LibraryItem> item);
+    void addUser(std::unique_ptr<User> u);
+
+    LibraryItem* findItem(int itemId);
+    User* findUser(int userId);
+
+    void listItems() const;
+    void listUsers() const;
+
+    void checkout(int itemId, int userId);
+    void returnItem(int itemId);
+};
+
+===== src/library_item.h =====
+#pragma once
+
+#include <string>
+
+class LibraryItem {
+protected:
+    std::string title;
+    int id;
+    bool checkedOut;
+
+public:
+    LibraryItem(std::string t, int i);
+    virtual ~LibraryItem();
+
+    int getId() const;
+    std::string getTitle() const;
+    bool isCheckedOut() const;
+
+    void checkOut();
+    void returnItem();
+
+    virtual void show() const = 0;
+};
+
+===== src/magazine.h =====
+#pragma once
+
+#include "library_item.h"
+
+class Magazine : public LibraryItem {
+    int issue;
+
+public:
+    Magazine(std::string t, int i, int iss);
+    void show() const override;
+};
+
+===== src/patron.h =====
+#pragma once
+
+#include "user.h"
+
+class Patron : public User {
+public:
+    Patron(int i, std::string n);
+    void show() const override;
+};
+
+===== src/user.h =====
+#pragma once
+
+#include <string>
+
+class User {
+protected:
+    int id;
+    std::string name;
+
+public:
+    User(int i, std::string n);
+    virtual ~User();
+
+    int getId() const;
+    std::string getName() const;
+
+    virtual void show() const = 0;
+};
+
+===== src/book.cpp =====
+#include "book.h"
+
+#include <iostream>
+
+Book::Book(std::string t, int i, std::string a)
+    : LibraryItem(std::move(t), i), author(std::move(a)) {}
+
+void Book::show() const {
+    std::cout << "Book   ID: " << id
+              << " | Title: " << title
+              << " | Author: " << author
+              << " | Status: " << (checkedOut ? "Checked out" : "Available")
+              << "\n";
+}
+
+===== src/librarian.cpp =====
+#include "librarian.h"
+
+#include <iostream>
+
+Librarian::Librarian(int i, std::string n) : User(i, std::move(n)) {}
+
+void Librarian::show() const {
+    std::cout << "Librarian ID: " << id
+              << " | Name: " << name << "\n";
+}
+
+===== src/library.cpp =====
+#include "library.h"
+
+#include <iostream>
+
+void Library::addItem(std::unique_ptr<LibraryItem> item) {
+    items.push_back(std::move(item));
+    std::cout << "Item added.\n";
+}
+
+void Library::addUser(std::unique_ptr<User> u) {
+    users.push_back(std::move(u));
+    std::cout << "User added.\n";
+}
+
+LibraryItem* Library::findItem(int itemId) {
+    for (const auto& p : items)
+        if (p->getId() == itemId)
+            return p.get();
+    return nullptr;
+}
+
+User* Library::findUser(int userId) {
+    for (const auto& u : users)
+        if (u->getId() == userId)
+            return u.get();
+    return nullptr;
+}
+
+void Library::listItems() const {
+    if (items.empty()) {
+        std::cout << "No items in library.\n";
+        return;
+    }
+    std::cout << "\n--- Library Items ---\n";
+    for (const auto& p : items)
+        p->show();
+}
+
+void Library::listUsers() const {
+    if (users.empty()) {
+        std::cout << "No users registered.\n";
+        return;
+    }
+    std::cout << "\n--- Users ---\n";
+    for (const auto& u : users)
+        u->show();
+}
+
+void Library::checkout(int itemId, int userId) {
+    LibraryItem* item = findItem(itemId);
+    User* user = findUser(userId);
+
+    if (!item) {
+        std::cout << "Item not found.\n";
+        return;
+    }
+    if (!user) {
+        std::cout << "User not found.\n";
+        return;
+    }
+    if (item->isCheckedOut()) {
+        std::cout << "Item already checked out.\n";
+        return;
+    }
+
+    item->checkOut();
+    std::cout << user->getName() << " checked out \"" << item->getTitle() << "\"\n";
+}
+
+void Library::returnItem(int itemId) {
+    LibraryItem* item = findItem(itemId);
+
+    if (!item) {
+        std::cout << "Item not found.\n";
+        return;
+    }
+    if (!item->isCheckedOut()) {
+        std::cout << "Item is not checked out.\n";
+        return;
+    }
+
+    item->returnItem();
+    std::cout << "Item returned.\n";
+}
+
+===== src/library_item.cpp =====
+#include "library_item.h"
+
+LibraryItem::LibraryItem(std::string t, int i)
+    : title(std::move(t)), id(i), checkedOut(false) {}
+
+LibraryItem::~LibraryItem() = default;
+
+int LibraryItem::getId() const { return id; }
+std::string LibraryItem::getTitle() const { return title; }
+bool LibraryItem::isCheckedOut() const { return checkedOut; }
+
+void LibraryItem::checkOut() { checkedOut = true; }
+void LibraryItem::returnItem() { checkedOut = false; }
+
+===== src/magazine.cpp =====
+#include "magazine.h"
+
+#include <iostream>
+
+Magazine::Magazine(std::string t, int i, int iss)
+    : LibraryItem(std::move(t), i), issue(iss) {}
+
+void Magazine::show() const {
+    std::cout << "Magaz. ID: " << id
+              << " | Title: " << title
+              << " | Issue: " << issue
+              << " | Status: " << (checkedOut ? "Checked out" : "Available")
+              << "\n";
+}
+
+===== src/main.cpp =====
+#include <iostream>
+#include <limits>
+#include <memory>
+#include <string>
+
+#include "library.h"
+
+int main() {
+    Library lib;
+    int choice;
+
+    do {
+        std::cout << "\n========== Library Menu ==========\n";
+        std::cout << "1. Add Book\n";
+        std::cout << "2. Add Magazine\n";
+        std::cout << "3. Add Patron\n";
+        std::cout << "4. Add Librarian\n";
+        std::cout << "5. List All Items\n";
+        std::cout << "6. List All Users\n";
+        std::cout << "7. Checkout Item\n";
+        std::cout << "8. Return Item\n";
+        std::cout << "0. Exit\n";
+        std::cout << "Choice: ";
+        std::cin >> choice;
+
+        if (!std::cin) break; // simple safety
+
+        if (choice == 1) {
+            int id;
+            std::string title, author;
+            std::cout << "Book ID: ";
+            std::cin >> id;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Title: ";
+            std::getline(std::cin, title);
+            std::cout << "Author: ";
+            std::getline(std::cin, author);
+            lib.addItem(std::make_unique<Book>(title, id, author));
+
+        } else if (choice == 2) {
+            int id, issue;
+            std::string title;
+            std::cout << "Magazine ID: ";
+            std::cin >> id;
+            std::cout << "Issue number: ";
+            std::cin >> issue;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Title: ";
+            std::getline(std::cin, title);
+            lib.addItem(std::make_unique<Magazine>(title, id, issue));
+
+        } else if (choice == 3) {
+            int id;
+            std::string name;
+            std::cout << "Patron ID: ";
+            std::cin >> id;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Name: ";
+            std::getline(std::cin, name);
+            lib.addUser(std::make_unique<Patron>(id, name));
+
+        } else if (choice == 4) {
+            int id;
+            std::string name;
+            std::cout << "Librarian ID: ";
+            std::cin >> id;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << "Name: ";
+            std::getline(std::cin, name);
+            lib.addUser(std::make_unique<Librarian>(id, name));
+
+        } else if (choice == 5) {
+            lib.listItems();
+
+        } else if (choice == 6) {
+            lib.listUsers();
+
+        } else if (choice == 7) {
+            int itemId, userId;
+            std::cout << "Item ID: ";
+            std::cin >> itemId;
+            std::cout << "User ID: ";
+            std::cin >> userId;
+            lib.checkout(itemId, userId);
+
+        } else if (choice == 8) {
+            int itemId;
+            std::cout << "Item ID: ";
+            std::cin >> itemId;
+            lib.returnItem(itemId);
+        }
+
+    } while (choice != 0);
+
+    std::cout << "Goodbye!\n";
+    return 0;
+}
+
+===== src/patron.cpp =====
+#include "patron.h"
+
+#include <iostream>
+
+Patron::Patron(int i, std::string n) : User(i, std::move(n)) {}
+
+void Patron::show() const {
+    std::cout << "Patron    ID: " << id
+              << " | Name: " << name << "\n";
+}
+
+===== src/user.cpp =====
+#include "user.h"
+
+User::User(int i, std::string n) : id(i), name(std::move(n)) {}
+User::~User() = default;
+
+int User::getId() const { return id; }
+std::string User::getName() const { return name; }
+
