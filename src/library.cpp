@@ -2,32 +2,27 @@
 
 #include <iostream>
 
-Library::~Library() {
-    for (auto p : items) delete p;
-    for (auto u : users) delete u;
-}
-
-void Library::addItem(LibraryItem* item) {
-    items.push_back(item);
+void Library::addItem(std::unique_ptr<LibraryItem> item) {
+    items.push_back(std::move(item));
     std::cout << "Item added.\n";
 }
 
-void Library::addUser(User* u) {
-    users.push_back(u);
+void Library::addUser(std::unique_ptr<User> u) {
+    users.push_back(std::move(u));
     std::cout << "User added.\n";
 }
 
 LibraryItem* Library::findItem(int itemId) {
-    for (auto p : items)
+    for (const auto& p : items)
         if (p->getId() == itemId)
-            return p;
+            return p.get();
     return nullptr;
 }
 
 User* Library::findUser(int userId) {
-    for (auto u : users)
+    for (const auto& u : users)
         if (u->getId() == userId)
-            return u;
+            return u.get();
     return nullptr;
 }
 
@@ -37,7 +32,7 @@ void Library::listItems() const {
         return;
     }
     std::cout << "\n--- Library Items ---\n";
-    for (auto p : items)
+    for (const auto& p : items)
         p->show();
 }
 
@@ -47,7 +42,7 @@ void Library::listUsers() const {
         return;
     }
     std::cout << "\n--- Users ---\n";
-    for (auto u : users)
+    for (const auto& u : users)
         u->show();
 }
 

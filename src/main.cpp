@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <string>
 
 #include "library.h"
@@ -34,7 +35,7 @@ int main() {
             std::getline(std::cin, title);
             std::cout << "Author: ";
             std::getline(std::cin, author);
-            lib.addItem(new Book(title, id, author));
+            lib.addItem(std::make_unique<Book>(title, id, author));
 
         } else if (choice == 2) {
             int id, issue;
@@ -46,7 +47,7 @@ int main() {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Title: ";
             std::getline(std::cin, title);
-            lib.addItem(new Magazine(title, id, issue));
+            lib.addItem(std::make_unique<Magazine>(title, id, issue));
 
         } else if (choice == 3) {
             int id;
@@ -56,7 +57,7 @@ int main() {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Name: ";
             std::getline(std::cin, name);
-            lib.addUser(new Patron(id, name));
+            lib.addUser(std::make_unique<Patron>(id, name));
 
         } else if (choice == 4) {
             int id;
@@ -66,7 +67,7 @@ int main() {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             std::cout << "Name: ";
             std::getline(std::cin, name);
-            lib.addUser(new Librarian(id, name));
+            lib.addUser(std::make_unique<Librarian>(id, name));
 
         } else if (choice == 5) {
             lib.listItems();

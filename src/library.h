@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 
 #include "book.h"
@@ -8,14 +9,15 @@
 #include "patron.h"
 
 class Library {
-    std::vector<LibraryItem*> items;
-    std::vector<User*> users;
+    std::vector<std::unique_ptr<LibraryItem>> items;
+    std::vector<std::unique_ptr<User>> users;
 
 public:
-    ~Library();
+    Library() = default;
+    ~Library() = default;
 
-    void addItem(LibraryItem* item);
-    void addUser(User* u);
+    void addItem(std::unique_ptr<LibraryItem> item);
+    void addUser(std::unique_ptr<User> u);
 
     LibraryItem* findItem(int itemId);
     User* findUser(int userId);
